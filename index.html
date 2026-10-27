@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SVA Full Operating System — v2.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+============================================================ */
+:root{
+  --bg:        #050a16;
+  --bg-2:      #070e1e;
+  --panel:     #0b1730;
+  --panel-hi:  #10203f;
+  --line:      rgba(120,165,230,.16);
+  --line-2:    rgba(120,165,230,.28);
+  --ink:       #eaf1ff;
+  --ink-soft:  #c3d3ec;
+  --muted:     #94a9c9;
+  --dim:       #6b83a8;
+  --accent:    #5b9dff;
+  --cyan:      #35e0d0;
+  --violet:    #a78bfa;
+  --amber:     #ffb454;
+  --rose:      #ff7a90;
+  --radius:    14px;
+}
+
+*{box-sizing:border-box;}
+
+html{
+  background:var(--bg);
+  color-scheme:dark;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 700px at 12% -8%, rgba(91,157,255,.16), transparent 62%),
+    radial-gradient(900px 620px at 92% 4%, rgba(53,224,208,.11), transparent 60%),
+    radial-gradient(900px 900px at 50% 110%, rgba(167,139,250,.09), transparent 65%),
+    linear-gradient(180deg,#050a16 0%,#060c1b 45%,#040814 100%);
+  background-attachment:fixed;
+  color:var(--ink);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:10.6pt;
+  line-height:1.6;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+.sheet{
+  max-width:1000px;
+  margin:0 auto;
+  padding:56px 46px 80px;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+============================================================ */
+h1,h2,h3,h4{margin:0;line-height:1.22;font-weight:700;letter-spacing:-.015em;}
+p{margin:0 0 12px;}
+strong{color:#fff;font-weight:600;}
+em{color:var(--ink-soft);font-style:italic;}
+
+.grad{
+  background:linear-gradient(100deg,#7fb4ff 0%,#5b9dff 38%,#35e0d0 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* ============================================================
+   COVER
+============================================================ */
+.cover{
+  position:relative;
+  border:1px solid var(--line-2);
+  border-radius:22px;
+  padding:64px 54px 52px;
+  background:
+    radial-gradient(700px 380px at 88% -10%, rgba(91,157,255,.22), transparent 62%),
+    radial-gradient(560px 340px at 0% 108%, rgba(53,224,208,.14), transparent 60%),
+    linear-gradient(165deg,#0a1730 0%,#081227 55%,#060d1e 100%);
+  overflow:hidden;
+  box-shadow:0 30px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.cover::after{
+  content:"";
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(120,165,230,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(120,165,230,.055) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(circle at 70% 20%, #000 0%, transparent 78%);
+  -webkit-mask-image:radial-gradient(circle at 70% 20%, #000 0%, transparent 78%);
+  pointer-events:none;
+}
+
+.cover > *{position:relative;z-index:1;}
+
+.logo{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:8px 16px 8px 8px;
+  border:1px solid var(--line-2);
+  border-radius:100px;
+  background:rgba(91,157,255,.08);
+  margin-bottom:34px;
+}
+.logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  display:grid;place-items:center;
+  font:800 11px/1 'JetBrains Mono',monospace;
+  letter-spacing:.03em;
+  color:#04101f;
+  background:linear-gradient(140deg,#7fb4ff,#35e0d0);
+  box-shadow:0 6px 20px rgba(91,157,255,.4);
+}
+.logo-text{
+  font:600 10px/1 'JetBrains Mono',monospace;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+.cover h1{
+  font-size:44px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.06;
+  margin-bottom:6px;
+}
+.cover h1 .thin{
+  display:block;
+  font-weight:300;
+  font-size:26px;
+  letter-spacing:.02em;
+  color:var(--muted);
+  margin-top:12px;
+}
+
+.cover-meta{
+  display:flex;flex-wrap:wrap;gap:10px;
+  margin-top:34px;
+}
+.pill{
+  font:500 9.4px/1 'JetBrains Mono',monospace;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:9px 14px;
+  border-radius:100px;
+  border:1px solid var(--line-2);
+  color:var(--ink-soft);
+  background:rgba(255,255,255,.03);
+}
+.pill.hot{
+  color:#04101f;
+  background:linear-gradient(120deg,#7fb4ff,#35e0d0);
+  border-color:transparent;
+  font-weight:600;
+}
+
+.cover-note{
+  margin-top:34px;
+  padding:18px 20px;
+  border-left:3px solid var(--cyan);
+  border-radius:0 12px 12px 0;
+  background:linear-gradient(100deg,rgba(53,224,208,.11),rgba(91,157,255,.04));
+  font-size:10.2pt;
+  color:var(--ink-soft);
+  max-width:640px;
+}
+.cover-note b{color:#fff;}
+
+/* ============================================================
+   TABLE OF CONTENTS
+============================================================ */
+.toc{
+  margin-top:34px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(180deg,rgba(11,23,48,.85),rgba(7,14,30,.85));
+  padding:30px 32px;
+}
+.toc h3{
+  font:600 10px/1 'JetBrains Mono',monospace;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  color:var(--cyan);
+  margin-bottom:20px;
+}
+.toc-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px 34px;
+}
+.toc-item{
+  display:flex;
+  gap:12px;
+  align-items:baseline;
+  padding:7px 0;
+  border-bottom:1px dashed rgba(120,165,230,.13);
+  font-size:10.2pt;
+  color:var(--ink-soft);
+}
+.toc-item span:first-child{
+  font:600 9px/1 'JetBrains Mono',monospace;
+  color:var(--accent);
+  min-width:26px;
+}
+
+/* ============================================================
+   SECTIONS
+============================================================ */
+.part{
+  margin-top:42px;
+  break-inside:auto;
+}
+.part-head{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  padding-bottom:10px;
+  margin-bottom:18px;
+  border-bottom:1px solid var(--line-2);
+  position:relative;
+}
+.part-head::after{
+  content:"";
+  position:absolute;left:0;bottom:-1px;height:2px;width:96px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  border-radius:2px;
+}
+.part-num{
+  font:700 9.5px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;
+  color:var(--cyan);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.part-head h2{
+  font-size:20px;
+  letter-spacing:-.02em;
+}
+
+h3.sub{
+  font:600 9.6px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:26px 0 12px;
+  display:flex;align-items:center;gap:10px;
+}
+h3.sub::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,var(--line-2),transparent);
+}
+
+/* ============================================================
+   TABLES
+============================================================ */
+.table-wrap{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:rgba(9,18,38,.6);
+  margin-bottom:6px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:9.6pt;
+}
+thead th{
+  background:linear-gradient(180deg,#132a52,#0d1d38);
+  color:#b9cff2;
+  font:600 8.4px/1.3 'JetBrains Mono',monospace;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  text-align:left;
+  padding:11px 14px;
+  border-bottom:1px solid var(--line-2);
+  white-space:nowrap;
+}
+tbody td{
+  padding:10px 14px;
+  border-bottom:1px solid rgba(120,165,230,.1);
+  vertical-align:top;
+  color:var(--ink-soft);
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even) td{background:rgba(120,165,230,.035);}
+tbody td:first-child{color:#fff;font-weight:500;}
+tbody td strong{color:#fff;}
+
+/* status chips */
+.chip{
+  display:inline-block;
+  font:600 8.2px/1 'JetBrains Mono',monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:5px 9px;
+  border-radius:6px;
+  white-space:nowrap;
+}
+.chip.ok{ color:#6ff0dd; background:rgba(53,224,208,.13); border:1px solid rgba(53,224,208,.3);}
+.chip.warn{color:#ffc478; background:rgba(255,180,84,.12); border:1px solid rgba(255,180,84,.3);}
+.chip.no{color:#ff92a5; background:rgba(255,122,144,.12); border:1px solid rgba(255,122,144,.3);}
+
+/* ============================================================
+   CALLOUTS
+============================================================ */
+.callout{
+  border-radius:var(--radius);
+  padding:18px 22px;
+  margin:16px 0;
+  border-left:3px solid var(--accent);
+  background:linear-gradient(100deg,rgba(91,157,255,.13),rgba(91,157,255,.03));
+  font-size:10.6pt;
+  color:#dbe7fb;
+  break-inside:avoid;
+}
+.callout.cyan{border-left-color:var(--cyan);background:linear-gradient(100deg,rgba(53,224,208,.12),rgba(53,224,208,.03));}
+.callout.violet{border-left-color:var(--violet);background:linear-gradient(100deg,rgba(167,139,250,.12),rgba(167,139,250,.03));}
+.callout.amber{border-left-color:var(--amber);background:linear-gradient(100deg,rgba(255,180,84,.11),rgba(255,180,84,.03));}
+.callout .label{
+  display:block;
+  font:600 8.4px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:9px;
+}
+.callout.cyan .label{color:var(--cyan);}
+.callout.violet .label{color:var(--violet);}
+.callout.amber .label{color:var(--amber);}
+
+.quote{
+  position:relative;
+  border-radius:var(--radius);
+  border:1px solid var(--line-2);
+  background:linear-gradient(160deg,rgba(16,32,63,.9),rgba(8,17,36,.9));
+  padding:22px 26px 22px 60px;
+  margin:16px 0;
+  font-size:10.4pt;
+  color:#dce8fb;
+  break-inside:avoid;
+}
+.quote::before{
+  content:"“";
+  position:absolute;left:20px;top:6px;
+  font-size:52px;line-height:1;
+  background:linear-gradient(140deg,#7fb4ff,#35e0d0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-weight:800;
+}
+
+/* ============================================================
+   CARDS / GRIDS
+============================================================ */
+.grid{display:grid;gap:14px;}
+.grid-2{grid-template-columns:1fr 1fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+
+.card{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(165deg,rgba(14,28,55,.9),rgba(8,16,34,.9));
+  padding:18px 20px;
+  break-inside:avoid;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  opacity:.7;
+}
+.card h4{
+  font-size:11.6pt;
+  margin-bottom:8px;
+  color:#fff;
+}
+.card p{font-size:9.8pt;color:var(--muted);margin:0;}
+.card p + p{margin-top:8px;}
+
+/* stat */
+.stat{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(160deg,rgba(16,32,63,.85),rgba(7,15,32,.85));
+  padding:16px 18px;
+  break-inside:avoid;
+}
+.stat .k{
+  font:600 8px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+  margin-bottom:8px;display:block;
+}
+.stat .v{
+  font-size:19px;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(100deg,#9cc4ff,#35e0d0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+
+/* layer card */
+.layer{
+  display:flex;gap:16px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(150deg,rgba(15,30,58,.9),rgba(7,15,32,.9));
+  padding:18px 20px;
+  margin-bottom:12px;
+  break-inside:avoid;
+}
+.layer-num{
+  flex:0 0 46px;height:46px;border-radius:12px;
+  display:grid;place-items:center;
+  font:800 15px/1 'JetBrains Mono',monospace;
+  color:#04101f;
+  background:linear-gradient(140deg,#7fb4ff,#35e0d0);
+  box-shadow:0 8px 22px rgba(91,157,255,.3);
+}
+.layer h4{font-size:11.4pt;margin-bottom:4px;}
+.layer .where{
+  font:500 8.4px/1.4 'JetBrains Mono',monospace;
+  letter-spacing:.06em;color:var(--cyan);
+  display:block;margin-bottom:8px;
+}
+.layer p{font-size:9.8pt;color:var(--muted);margin:0;}
+.layer p + p{margin-top:6px;}
+
+/* timeline (client journey) */
+.journey{position:relative;padding-left:34px;}
+.journey::before{
+  content:"";position:absolute;left:11px;top:8px;bottom:8px;width:2px;
+  background:linear-gradient(180deg,var(--accent),var(--cyan),var(--violet));
+  opacity:.45;border-radius:2px;
+}
+.stage{
+  position:relative;
+  margin-bottom:16px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:linear-gradient(150deg,rgba(13,26,52,.9),rgba(7,14,30,.9));
+  padding:16px 20px;
+  break-inside:avoid;
+}
+.stage::before{
+  content:"";position:absolute;left:-29px;top:22px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 0 4px rgba(53,224,208,.15),0 0 16px rgba(53,224,208,.6);
+}
+.stage h4{font-size:11.4pt;margin-bottom:4px;}
+.stage .snum{
+  font:600 8.2px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;color:var(--accent);
+  text-transform:uppercase;display:block;margin-bottom:7px;
+}
+.stage p{font-size:9.8pt;color:var(--muted);margin:0 0 6px;}
+.stage .out{
+  font-size:9.4pt;color:#bcd2f5;
+  border-top:1px dashed rgba(120,165,230,.18);
+  padding-top:8px;margin-top:10px;
+}
+.stage .out b{color:var(--cyan);font-weight:600;}
+
+/* flow chain */
+.flow{
+  display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;
+  margin:16px 0 6px;
+}
+.flow .node{
+  flex:1 1 130px;
+  border:1px solid var(--line-2);
+  border-radius:10px;
+  background:linear-gradient(160deg,rgba(18,36,68,.95),rgba(8,17,36,.95));
+  padding:12px 14px;
+  text-align:center;
+}
+.flow .node .t{
+  font:600 8px/1 'JetBrains Mono',monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
+  display:block;margin-bottom:7px;
+}
+.flow .node .d{font-size:9.2pt;color:var(--ink-soft);line-height:1.35;}
+.flow .arrow{
+  display:grid;place-items:center;
+  color:var(--accent);font-size:15px;font-weight:700;
+  padding:0 2px;
+}
+
+/* lists */
+ul.clean{list-style:none;padding:0;margin:0;}
+ul.clean li{
+  position:relative;
+  padding:8px 0 8px 24px;
+  border-bottom:1px dashed rgba(120,165,230,.13);
+  font-size:10.1pt;
+  color:var(--ink-soft);
+  break-inside:avoid;
+}
+ul.clean li:last-child{border-bottom:none;}
+ul.clean li::before{
+  content:"";
+  position:absolute;left:4px;top:16px;
+  width:7px;height:7px;border-radius:2px;
+  background:linear-gradient(140deg,var(--accent),var(--cyan));
+  transform:rotate(45deg);
+}
+ul.clean li b{color:#fff;font-weight:600;}
+
+ol.rules{
+  counter-reset:r;
+  list-style:none;padding:0;margin:0;
+}
+ol.rules li{
+  counter-increment:r;
+  position:relative;
+  padding:11px 0 11px 46px;
+  border-bottom:1px dashed rgba(120,165,230,.13);
+  font-size:10.2pt;
+  color:var(--ink-soft);
+  break-inside:avoid;
+}
+ol.rules li:last-child{border-bottom:none;}
+ol.rules li::before{
+  content:counter(r,decimal-leading-zero);
+  position:absolute;left:0;top:11px;
+  font:700 9.6px/1 'JetBrains Mono',monospace;
+  color:var(--cyan);
+  background:rgba(53,224,208,.1);
+  border:1px solid rgba(53,224,208,.25);
+  border-radius:6px;
+  padding:5px 7px;
+}
+ol.rules li b{color:#fff;font-weight:600;}
+
+.checklist{list-style:none;padding:0;margin:0;}
+.checklist li{
+  position:relative;
+  padding:9px 0 9px 30px;
+  border-bottom:1px dashed rgba(120,165,230,.13);
+  font-size:10.1pt;color:var(--ink-soft);
+  break-inside:avoid;
+}
+.checklist li:last-child{border-bottom:none;}
+.checklist li::before{
+  content:"✓";
+  position:absolute;left:2px;top:8px;
+  color:var(--cyan);font-weight:700;font-size:11pt;
+}
+
+/* master control sheet */
+.mcs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:8px;
+}
+.mcs .tile{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:linear-gradient(160deg,rgba(15,30,58,.92),rgba(7,14,30,.92));
+  padding:16px 18px;
+  break-inside:avoid;
+}
+.mcs .tile h5{
+  font:600 8.2px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--cyan);margin:0 0 10px;
+}
+.mcs .tile p{
+  font-size:9.4pt;color:var(--ink-soft);margin:0 0 5px;line-height:1.45;
+}
+.mcs .tile p:last-child{margin-bottom:0;}
+.mcs .tile .k{color:var(--dim);}
+
+.schedule-strip{
+  margin-top:14px;
+  border:1px solid rgba(53,224,208,.3);
+  border-radius:12px;
+  background:linear-gradient(100deg,rgba(53,224,208,.1),rgba(91,157,255,.06));
+  padding:14px 18px;
+  display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;
+  break-inside:avoid;
+}
+.schedule-strip .lbl{
+  font:600 8.2px/1 'JetBrains Mono',monospace;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);
+}
+.schedule-strip .slot{
+  font:600 9.4px/1 'JetBrains Mono',monospace;
+  color:#dbe7fb;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line-2);
+  border-radius:7px;
+  padding:7px 11px;
+}
+
+/* footer */
+.footer{
+  margin-top:56px;
+  padding-top:20px;
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  font:500 8.6px/1.6 'JetBrains Mono',monospace;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+}
+
+/* print toolbar */
+.toolbar{
+  position:fixed;right:22px;bottom:22px;z-index:99;
+  display:flex;gap:10px;align-items:center;
+}
+.btn{
+  cursor:pointer;
+  font:600 9px/1 'JetBrains Mono',monospace;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:#04101f;
+  background:linear-gradient(120deg,#7fb4ff,#35e0d0);
+  border:none;border-radius:100px;
+  padding:14px 22px;
+  box-shadow:0 10px 30px rgba(91,157,255,.35);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(91,157,255,.45);}
+
+.hint{
+  font:500 8.4px/1.5 'JetBrains Mono',monospace;
+  color:var(--dim);max-width:180px;text-align:right;
+}
+
+/* ============================================================
+   PRINT
+============================================================ */
+@page{ size:A4; margin:13mm 12mm; }
+
+@media print{
+  html,body{
+    background:#050a16 !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  body{font-size:9.6pt;}
+  .sheet{max-width:none;padding:0;margin:0;}
+  .no-print{display:none !important;}
+  .cover{break-after:page;page-break-after:always;border-radius:16px;}
+  .toc{break-after:page;page-break-after:always;}
+  .part{margin-top:26px;}
+  .part:first-of-type{margin-top:0;}
+  h2,h3,h4,h5{break-after:avoid;page-break-after:avoid;}
+  tr,.card,.callout,.quote,.stat,.layer,.stage,.mcs .tile,
+  .table-wrap,.schedule-strip,ul.clean li,ol.rules li,.checklist li{
+    break-inside:avoid;page-break-inside:avoid;
+  }
+  thead{display:table-header-group;}
+  .toc-grid{grid-template-columns:1fr 1fr;}
+}
+
+@media (max-width:760px){
+  .sheet{padding:28px 18px 60px;}
+  .cover{padding:38px 26px;}
+  .cover h1{font-size:30px;}
+  .toc-grid,.grid-2,.grid-3,.grid-4,.mcs{grid-template-columns:1fr;}
+  .flow .arrow{transform:rotate(90deg);}
+}
+</style>
+</head>
+<body>
+
+<main class="sheet">
+
+  <!-- ==================== COVER ==================== -->
+  <section class="cover">
+    <div class="logo">
+      <div class="logo-mark">SVA</div>
+      <div class="logo-text">Strategic Value Architecture</div>
+    </div>
+
+    <h1>
+      The SVA Full<br>Operating System
+      <span class="thin">Version 2.1 &nbsp;·&nbsp; The Complete Operating Manual</span>
+    </h1>
+
+    <div class="cover-meta">
+      <span class="pill hot">Version 2.1</span>
+      <span class="pill">Ian Odero</span>
+      <span class="pill">Strategic Value Consultant</span>
+      <span class="pill">46-Week Cycle</span>
+      <span class="pill">9 Protocols</span>
+    </div>
+
+    <div class="cover-note">
+      <b>What changed in v2.1:</b> Thursday is now the only morning email day.
+      Tuesday and Wednesday emails move to the afternoon (3:15–4:15pm).
+      Thursday morning carries Email 3; Thursday afternoon carries Email 4.
+    </div>
+  </section>
+
+  <!-- ==================== TOC ==================== -->
+  <section class="toc">
+    <h3>Contents</h3>
+    <div class="toc-grid">
+      <div class="toc-item"><span>00</span><span>The Identity</span></div>
+      <div class="toc-item"><span>08</span><span>The Protection Protocol (5 Layers)</span></div>
+      <div class="toc-item"><span>01</span><span>Registration Status &amp; Interim Protocol</span></div>
+      <div class="toc-item"><span>09</span><span>The Tier &amp; Close System</span></div>
+      <div class="toc-item"><span>02</span><span>The Market &amp; The Game</span></div>
+      <div class="toc-item"><span>10</span><span>The Data Requirements</span></div>
+      <div class="toc-item"><span>03</span><span>The Revenue Architecture</span></div>
+      <div class="toc-item"><span>11</span><span>The Contracts</span></div>
+      <div class="toc-item"><span>04</span><span>The Annual Calendar (46 Weeks)</span></div>
+      <div class="toc-item"><span>12</span><span>The Operating Principles</span></div>
+      <div class="toc-item"><span>05</span><span>The Weekly Rhythm</span></div>
+      <div class="toc-item"><span>13</span><span>The Annual Review</span></div>
+      <div class="toc-item"><span>06</span><span>The Client Journey</span></div>
+      <div class="toc-item"><span>14</span><span>The Master Control Sheet</span></div>
+      <div class="toc-item"><span>07</span><span>The Protocol Library</span></div>
+    </div>
+  </section>
+
+  <!-- ==================== PART 0 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 00</span>
+      <h2>The Identity</h2>
+    </div>
+
+    <h3 class="sub">What SVA Is</h3>
+    <p>SVA is a <strong>strategic value architecture firm</strong>. It is not a consulting firm. It is not a data company. It is not a report shop. It is an <strong>accountability company</strong> — the layer of judgment, synthesis, and implementation protection that sits above the data cloud and below the boardroom.</p>
+
+    <div class="callout">
+      <span class="label">The Positioning — One Sentence</span>
+      SVA combines the diagnostic rigor of MBB with the speed and accessibility of a solo consultant, protected by a 5-layer implementation protocol that removes client risk — and wins because the incumbents are structurally incapable of following.
+    </div>
+
+    <h3 class="sub">The Operating Style — Seven Principles</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:40px">#</th><th style="width:220px">Principle</th><th>What It Means</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Advisory, not executive</td><td>SVA recommends. The client executes.</td></tr>
+          <tr><td>2</td><td>Evidence-grounded, not opinion-driven</td><td>Every recommendation traces to a number.</td></tr>
+          <tr><td>3</td><td>Milestone-based, not time-based</td><td>Billed on gates, not hours.</td></tr>
+          <tr><td>4</td><td>Specific, not generic</td><td>If it could be sent to another client, it is not finished.</td></tr>
+          <tr><td>5</td><td>Calm, not urgent</td><td>Arithmetic is the urgency. No manufactured pressure.</td></tr>
+          <tr><td>6</td><td>Protected, not exposed</td><td>The 5-Layer Protocol protects both sides.</td></tr>
+          <tr><td>7</td><td>Selective, not desperate</td><td>We decline work that does not fit the model.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== PART 1 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 01</span>
+      <h2>Registration Status &amp; Interim Protocol</h2>
+    </div>
+
+    <h3 class="sub">Current Status</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:230px">Item</th><th style="width:190px">Status</th><th>What It Allows</th></tr></thead>
+        <tbody>
+          <tr><td>Bank account</td><td><span class="chip warn">Personal</span></td><td>Receiving money, but not as a business.</td></tr>
+          <tr><td>KRA PIN</td><td><span class="chip warn">Personal</span></td><td>Tax compliance as an individual.</td></tr>
+          <tr><td>Business name registration</td><td><span class="chip no">Not yet done</span></td><td>No legal standing for “SVA” as a trading name.</td></tr>
+          <tr><td>Business bank account</td><td><span class="chip no">Blocked</span></td><td>Not possible without registration — cannot receive payments as a business.</td></tr>
+          <tr><td>eTIMS registration</td><td><span class="chip no">Not yet done</span></td><td>Cannot issue compliant tax invoices.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The Registration Timeline — This Week</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:46px">Step</th><th>Action</th><th style="width:190px">Where</th><th style="width:82px">Time</th><th style="width:112px">Cost</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Register “SVA” as a business name (sole proprietorship)</td><td>eCitizen → Business Registration Service</td><td>1–3 days</td><td>~KES 1,000–3,000</td></tr>
+          <tr><td>2</td><td>Get the business KRA PIN (issued with the registration certificate)</td><td>eCitizen / KRA</td><td>Same day</td><td>Free</td></tr>
+          <tr><td>3</td><td>Open a business bank account</td><td>Your bank — certificate + PIN + ID</td><td>3–7 days</td><td>Free–KES 5,000</td></tr>
+          <tr><td>4</td><td>Register for eTIMS</td><td>etims.kra.go.ke</td><td>1–2 days</td><td>Free</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout cyan">
+      <span class="label">Total Timeline</span>
+      <strong>7–14 days.</strong> Run registration in parallel with client work — never pause the pipeline for paperwork.
+    </div>
+
+    <h3 class="sub">The Interim Protocol — If a Client Converts Before Registration</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:50%">Standard Version</th><th>Interim Version</th></tr></thead>
+        <tbody>
+          <tr><td>“Ian Odero, trading as SVA”</td><td>“Ian Odero” (individual)</td></tr>
+          <tr><td>“KRA PIN: [business PIN]”</td><td>“KRA PIN: [personal PIN]”</td></tr>
+          <tr><td>“Registered address: [business address]”</td><td>“Address: [personal address]”</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quote">
+      <strong>What you tell the client:</strong><br>
+      “The MSA is signed under my name as an individual consultant. I am completing the business registration in parallel — the certificate will be issued within two weeks, and future SOWs will be under the registered entity. This does not affect the terms of the engagement.”
+    </div>
+
+    <div class="quote">
+      <strong>What you tell the bank (if asked):</strong><br>
+      “This is a consulting fee from a client for a strategic diagnostic engagement. The business registration is in process. The invoice and contract are available.”
+    </div>
+
+    <h3 class="sub">What to Change in the Protocols</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:120px">Protocol</th><th style="width:150px">Field</th><th>Interim (until registered)</th><th>Final (after registration)</th></tr></thead>
+        <tbody>
+          <tr><td>07 (MSA)</td><td>Consultant name</td><td>“Ian Odero”</td><td>“Ian Odero, trading as SVA”</td></tr>
+          <tr><td>07 (MSA)</td><td>KRA PIN</td><td>[Personal PIN]</td><td>[Business PIN]</td></tr>
+          <tr><td>08 (SOW)</td><td>Same fields</td><td>Same</td><td>Same</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== PART 2 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 02</span>
+      <h2>The Market &amp; The Game</h2>
+    </div>
+
+    <h3 class="sub">The Four Segments</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:170px">Segment</th><th>Profile</th><th style="width:250px">WTP</th></tr></thead>
+        <tbody>
+          <tr><td>Mid-Cap Stagnant</td><td>$10M–$100M revenue. Solid core, flat growth, squeezed by commoditization.</td><td>$15K–$25K diagnostic → $150K–$250K engagement</td></tr>
+          <tr><td>Distressed</td><td>Margin compression, share erosion, survival mode.</td><td>$15K–$25K diagnostic → $150K–$250K engagement</td></tr>
+          <tr><td>Growth-Obsessed</td><td>Product-market fit, ready to scale.</td><td>$15K–$25K diagnostic → $150K–$250K engagement</td></tr>
+          <tr><td>PE/VC Portfolio</td><td>Fund with capital to deploy or portfolio company needing value creation.</td><td>$25K–$50K diagnostic → $75K–$150K per company</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The Game</h3>
+    <div class="grid grid-2">
+      <div class="card"><h4>How we win</h4><p>Profitability per engagement and client outcome velocity — not market share.</p></div>
+      <div class="card"><h4>How we compete</h4><p>Diagnostic accuracy, speed-to-insight, implementation accountability.</p></div>
+      <div class="card"><h4>Our enemy</h4><p>Client inertia and the structural misalignment of the Big 4 model.</p></div>
+      <div class="card"><h4>Our asset</h4><p>The SVA protocols, the SIS IP, the 5-Layer Protection Protocol, pattern-resistance.</p></div>
+      <div class="card" style="grid-column:1 / -1;"><h4>What we reward</h4><p>Evidence, speed, specificity, client outcomes, referral generation.</p></div>
+    </div>
+
+    <h3 class="sub">The Incumbent Vulnerability</h3>
+    <div class="quote">
+      The Big 4 and MBB are structurally disincentivized to serve the mid-market because their model requires fees of $500K+ to cover partner time, junior delivery, and global overhead. They cannot deliver speed, accountability, or specificity. <strong>They sell reports. We sell outcomes.</strong>
+    </div>
+  </section>
+
+  <!-- ==================== PART 3 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 03</span>
+      <h2>The Revenue Architecture</h2>
+    </div>
+
+    <h3 class="sub">The Two-Product Engine</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:170px">Product</th><th style="width:130px">Duration</th><th style="width:130px">Fee</th><th>Payment</th><th style="width:80px">Margin</th></tr></thead>
+        <tbody>
+          <tr><td>Strategic Diagnostic</td><td>2 weeks</td><td>$15K–$25K</td><td>50% upfront, 50% on Gate 1</td><td>80%+</td></tr>
+          <tr><td>Full Engagement</td><td>12 weeks</td><td>$150K–$250K</td><td>50% upfront, 25% Gate 2, 25% Gate 4</td><td>80%+</td></tr>
+          <tr><td>PE/VC Portfolio</td><td>12 weeks per company</td><td>$75K–$150K</td><td>Same structure</td><td>80%+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The Revenue Mix Over Time</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stream</th><th>Year 1</th><th>Year 3</th><th>Year 5</th></tr></thead>
+        <tbody>
+          <tr><td>Diagnostic</td><td>60%</td><td>40%</td><td>30%</td></tr>
+          <tr><td>Full Engagement</td><td>40%</td><td>50%</td><td>50%</td></tr>
+          <tr><td>PE/VC Portfolio</td><td>0%</td><td>10%</td><td>20%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Unit Economics</h3>
+    <div class="grid grid-4">
+      <div class="stat"><span class="k">CAC</span><span class="v">$500–$1K</span></div>
+      <div class="stat"><span class="k">LTV</span><span class="v">$150K–$250K</span></div>
+      <div class="stat"><span class="k">LTV : CAC</span><span class="v">150:1–500:1</span></div>
+      <div class="stat"><span class="k">Gross Margin</span><span class="v">80%+</span></div>
+    </div>
+    <div class="table-wrap" style="margin-top:14px;">
+      <table>
+        <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>CAC</td><td>$500–$1,000 per qualified lead</td></tr>
+          <tr><td>LTV</td><td>$150K–$250K per full engagement</td></tr>
+          <tr><td>LTV:CAC</td><td>150:1 to 500:1</td></tr>
+          <tr><td>Payback</td><td>&lt; 6 months</td></tr>
+          <tr><td>Gross Margin</td><td>80%+</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== PART 4 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 04</span>
+      <h2>The Annual Calendar — 46 Weeks</h2>
+    </div>
+
+    <h3 class="sub">The Quarter Structure</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:100px">Quarter</th><th>Start</th><th>End</th><th>Weeks</th><th>Cohorts</th><th>Prospects</th></tr></thead>
+        <tbody>
+          <tr><td>Q1</td><td>Jan 12</td><td>Apr 3</td><td>12</td><td>A–L</td><td>240</td></tr>
+          <tr><td>Q2</td><td>Apr 6</td><td>Jun 26</td><td>12</td><td>M–X</td><td>240</td></tr>
+          <tr><td>Q3</td><td>Jun 29</td><td>Sep 18</td><td>12</td><td>Y–JJ</td><td>240</td></tr>
+          <tr><td>Q4</td><td>Sep 21</td><td>Nov 27</td><td>10</td><td>KK–TT</td><td>200–240</td></tr>
+          <tr><td>Year-End Reset</td><td>Nov 30</td><td>Jan 8</td><td>6</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout cyan">
+      <span class="label">Total</span>
+      <strong>46 productive weeks.</strong> Approximately <strong>920–960 prospects per year.</strong>
+    </div>
+
+    <h3 class="sub">The Reset Cadence</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:200px">Event</th><th style="width:290px">When</th><th>What Happens</th></tr></thead>
+        <tbody>
+          <tr><td>Quarterly Reset</td><td>End of each quarter (Weeks 12, 24, 36, 46)</td><td>Full re-tiering of all accounts. Set next quarter strategy.</td></tr>
+          <tr><td>Half-Year Full Reset</td><td>End of Q2 (Week 24) and end of Q4 (Week 46)</td><td>Deep re-assessment. Annual review. Set half-year strategy.</td></tr>
+          <tr><td>Monthly Check-In</td><td>Last Friday of each month</td><td>Pipeline, conversion, cash, risks, OKRs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== PART 5 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 05</span>
+      <h2>The Weekly Rhythm — Updated</h2>
+    </div>
+
+    <h3 class="sub">The Standard Week</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:130px">Day</th><th>Action</th><th style="width:130px">Time</th><th style="width:120px">Cognitive Slot</th></tr></thead>
+        <tbody>
+          <tr><td>Monday</td><td>Send follow-ups (drafted Friday)</td><td>2:00–2:30pm</td><td>Decision</td></tr>
+          <tr><td>Monday</td><td>Research &amp; prepare new cohort</td><td>Afternoon</td><td>—</td></tr>
+          <tr><td>Tuesday</td><td>Email 1 to new cohort</td><td>3:15–4:15pm</td><td>Reading</td></tr>
+          <tr><td>Wednesday</td><td>Email 2 to new cohort</td><td>3:15–4:15pm</td><td>Reading</td></tr>
+          <tr><td>Thursday AM</td><td>Email 3 to new cohort</td><td>6:30–7:00am</td><td>Reading</td></tr>
+          <tr><td>Thursday PM</td><td>Email 4 to new cohort</td><td>2:30–3:30pm</td><td>Bridge</td></tr>
+          <tr><td>Friday</td><td>Weekly review + draft Monday follow-ups</td><td>30–60 min</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout amber">
+      <span class="label">Key Change in v2.1</span>
+      Tuesday and Wednesday emails move to the afternoon. <strong>Thursday becomes the only morning email day</strong> (Email 3). Thursday afternoon carries Email 4.
+    </div>
+
+    <h3 class="sub">The Marketing → Sales Flow</h3>
+    <div class="flow">
+      <div class="node"><span class="t">Marketing</span><span class="d">SIS + Emails 1–3</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="t">Bridge</span><span class="d">Email 4 — Autonomy Close</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="t">Sales</span><span class="d">Follow-Up 1 — The Question</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="t">Sales</span><span class="d">Follow-Up 2 — The Consequence</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><span class="t">Revenue</span><span class="d">Diagnostic Booked</span></div>
+    </div>
+
+    <h3 class="sub">The Friday Ritual — 30–60 Minutes</h3>
+    <ol class="rules">
+      <li>Export Mail Suite data for the week's cohort.</li>
+      <li>Update CRM: opens, clicks, briefing visits.</li>
+      <li>Tier the cohort: Tier 1, 2, or 3.</li>
+      <li>Draft Monday's follow-ups using Protocols 01 &amp; 02.</li>
+      <li>Plan next week's cohort.</li>
+    </ol>
+  </section>
+
+  <!-- ==================== PART 6 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 06</span>
+      <h2>The Client Journey</h2>
+    </div>
+
+    <div class="journey">
+
+      <div class="stage">
+        <span class="snum">Stage 1 — Marketing · The Hypothesis</span>
+        <h4>Hypothesis</h4>
+        <p>The SIS is built from public data, industry intelligence, competitor analysis, and observable signals. The 4-email sequence is sent according to the updated schedule. The briefing page is live.</p>
+        <div class="out"><b>Output:</b> SIS + 4 emails + Strategic Briefing. The tension is a hypothesis.</div>
+      </div>
+
+      <div class="stage">
+        <span class="snum">Stage 2 — Sales · The Conversion</span>
+        <h4>Conversion</h4>
+        <p>The prospect opens 3 consecutive emails. You send Follow-Up 1 (Protocol 01). If they reply, you book the diagnostic. If they don't, you send Follow-Up 2 (Protocol 02) 2–3 weeks later. If they call, you use Protocol 09A.</p>
+        <div class="out"><b>Output:</b> Diagnostic booked. MSA + SOW signed. 50% upfront paid. The SOW names the tension as preliminary — to be confirmed or revised.</div>
+      </div>
+
+      <div class="stage">
+        <span class="snum">Stage 3 — Contracting · The Legal Instruments</span>
+        <h4>Legal Instruments</h4>
+        <p>MSA (Protocol 07) and SOW (Protocol 08) are generated from the inputs. If registered, the business entity signs. If not, the interim protocol applies.</p>
+        <div class="out"><b>Output:</b> Signed MSA + SOW. Payment received.</div>
+      </div>
+
+      <div class="stage">
+        <span class="snum">Stage 4 — Diagnostic · The Validation</span>
+        <h4>Validation</h4>
+        <p>Two weeks. Data request. 90-minute CEO session (Protocol 03). CFO session. The Revised SIS (Protocol 04A) is produced. The Diagnostic Report (Protocol 04) is delivered.</p>
+        <div class="out"><b>Output:</b> Revised SIS (Gate 1). Diagnostic Report. Full engagement proposal. The tension is confirmed, refined, or replaced. <b>The delta is the value.</b></div>
+      </div>
+
+      <div class="stage">
+        <span class="snum">Stage 5 — Full Engagement · The Protection</span>
+        <h4>Protection</h4>
+        <p>12 weeks. Four phases. Four gates. The 5-Layer Protection Protocol is operationalized (Protocol 05).</p>
+        <div class="out"><b>Output:</b> Strategy, roadmap, IRA, pre-mortem, final report. Full payment. <b>The client owns the execution. SVA owns the advice.</b></div>
+      </div>
+
+      <div class="stage">
+        <span class="snum">Stage 6 — Referral · The Compound</span>
+        <h4>Compound</h4>
+        <p>Within 7 days of engagement close, the referral request is sent (Protocol 06). Specific names. Easy introductions. Genuine release.</p>
+        <div class="out"><b>Output:</b> 1–3 referrals per satisfied client. <b>The referral loop is the multiplier.</b></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== PART 7 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 07</span>
+      <h2>The Protocol Library</h2>
+    </div>
+
+    <h3 class="sub">The Nine Protocols</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:54px">#</th><th style="width:210px">Protocol</th><th>Function</th><th style="width:60px">Stage</th><th style="width:190px">Trigger</th></tr></thead>
+        <tbody>
+          <tr><td>—</td><td>Full Operating System</td><td>The engine</td><td>0</td><td>Before any client</td></tr>
+          <tr><td>—</td><td>SIS Generation</td><td>The hypothesis</td><td>1</td><td>New prospect identified</td></tr>
+          <tr><td>—</td><td>4-Email Sequence</td><td>Demand creation (updated schedule)</td><td>1</td><td>SIS built</td></tr>
+          <tr><td>01</td><td>First Follow-Up</td><td>Converts attention into a diagnostic booking</td><td>2</td><td>3 consecutive opens, no booking</td></tr>
+          <tr><td>02</td><td>Second Follow-Up</td><td>Final consequence, then release</td><td>2</td><td>No response to FU1, 2–3 weeks later</td></tr>
+          <tr><td>09A</td><td>Experience &amp; Nosy Prospect Generator</td><td>Protects position without lying or over-exposing</td><td>2</td><td>Prospect calls or asks about experience</td></tr>
+          <tr><td>07</td><td>MSA Generator</td><td>The umbrella contract</td><td>3</td><td>Prospect agrees to diagnostic</td></tr>
+          <tr><td>08</td><td>SOW Generator</td><td>The per-engagement contract</td><td>3</td><td>Same moment as MSA</td></tr>
+          <tr><td>04A</td><td>Analysis Refinement</td><td>Refines Stage 1 SIS with diagnostic data</td><td>4</td><td>Client data received (Week 1)</td></tr>
+          <tr><td>03</td><td>CEO Session Guide Generator</td><td>Runs the 90-minute diagnostic interview</td><td>4</td><td>48 hours before the session</td></tr>
+          <tr><td>04</td><td>Diagnostic Report Generator</td><td>Converts diagnostic into full engagement</td><td>4</td><td>End of Week 2</td></tr>
+          <tr><td>05</td><td>Full Engagement Protocol</td><td>Runs the 12-week engagement</td><td>5</td><td>Full engagement signed</td></tr>
+          <tr><td>06</td><td>Referral Request Protocol</td><td>Asks for specific introductions</td><td>6</td><td>7 days after engagement close</td></tr>
+          <tr><td>09</td><td>Experience &amp; Nosy Prospect (Master)</td><td>The stance behind 09A</td><td>Any</td><td>Any personal question, any stage</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">How to Use the Protocols</h3>
+    <ol class="rules">
+      <li>Paste the protocol into your AI system.</li>
+      <li>Fill the INPUTS block — every field, no exceptions.</li>
+      <li>Receive the output — ready to use.</li>
+      <li>Run the silent quality check — if any test fails, regenerate.</li>
+      <li>Send, sign, deliver.</li>
+    </ol>
+    <div class="callout">
+      <span class="label">Remember</span>
+      The protocols are not templates. They are <strong>engines</strong>. The inputs determine the output. The output is account-specific.
+    </div>
+  </section>
+
+  <!-- ==================== PART 8 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 08</span>
+      <h2>The Protection Protocol — 5 Layers</h2>
+    </div>
+
+    <div class="layer">
+      <div class="layer-num">1</div>
+      <div>
+        <span class="where">MSA Clause 4 · SOW Scope section</span>
+        <h4>Contractual Protection</h4>
+        <p>“The Consultant recommends. The Client executes. The Consultant is not liable for implementation.”</p>
+        <p><em>Why it matters:</em> It draws the line before work begins. The client cannot claim you were responsible for execution.</p>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="layer-num">2</div>
+      <div>
+        <span class="where">SOW Section 4 — Gates 1–4</span>
+        <h4>Structural Protection (Sign-Off Gates)</h4>
+        <p>Each gate is a written sign-off. Payment is triggered by gate, not by time.</p>
+        <p><em>Why it matters:</em> Once a gate is signed, you cannot be held accountable for failure at a later gate.</p>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="layer-num">3</div>
+      <div>
+        <span class="where">SOW Section 9 · Delivered at Gate 3 (draft) and Gate 4 (final)</span>
+        <h4>Operational Protection (IRA)</h4>
+        <p>The Implementation Readiness Assessment scores the client's readiness across six dimensions. Red flags are documented.</p>
+        <p><em>Why it matters:</em> If the client proceeds despite red flags, the record shows you warned them.</p>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="layer-num">4</div>
+      <div>
+        <span class="where">SOW Section 3 — Phase 4 deliverable</span>
+        <h4>Monitoring Protection (Tracker)</h4>
+        <p>The Implementation Tracker tracks milestones, budget burn, risk triggers, and dependencies. The client's Project Lead updates it. The Steering Committee reviews it.</p>
+        <p><em>Why it matters:</em> It creates a paper trail. If the client deviates, it is visible and documented.</p>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="layer-num">5</div>
+      <div>
+        <span class="where">SOW Section 8 · Pre-Mortem at Gate 4</span>
+        <h4>Governance Protection (Steering Committee + Pre-Mortem)</h4>
+        <p>The Joint Steering Committee is constituted, chaired by the client CEO, with formal minutes. The Pre-Mortem Documentation identifies risks and states: “Implementation recommendations are at Client's discretion.”</p>
+        <p><em>Why it matters:</em> Decisions and acknowledgments are recorded. The client cannot later deny what was agreed. <strong>The Pre-Mortem is the insurance policy.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PART 9 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 09</span>
+      <h2>The Tier &amp; Close System</h2>
+    </div>
+
+    <h3 class="sub">The Tier System</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:90px">Tier</th><th>Definition</th><th style="width:250px">Re-Engagement</th></tr></thead>
+        <tbody>
+          <tr><td>Tier 1</td><td>Opened email, clicked briefing, visited page, or showed any signal.</td><td>Re-engage next quarter (all).</td></tr>
+          <tr><td>Tier 2</td><td>Good fit, but no signal. Or smaller size.</td><td>Re-engage next half-year (half).</td></tr>
+          <tr><td>Tier 3</td><td>No signal, poor fit, or explicitly declined.</td><td>Drop after 7 touches / 6 months.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout cyan">
+      <span class="label">The Half Rule</span>
+      <strong>Tier 1:</strong> re-engage all every quarter. &nbsp;·&nbsp; <strong>Tier 2:</strong> re-engage half every half-year. &nbsp;·&nbsp; <strong>Tier 3:</strong> drop.
+    </div>
+
+    <h3 class="sub">The Close Rule</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:180px">Closure Type</th><th>Trigger</th><th style="width:100px">Action</th><th style="width:230px">Revisit?</th></tr></thead>
+        <tbody>
+          <tr><td>Graceful Close</td><td>Explicit decline</td><td>Archive</td><td>12 months, only if trigger event</td></tr>
+          <tr><td>Time-Based Close</td><td>7 touches, 6 months, no response</td><td>Archive</td><td>12 months, only if trigger event</td></tr>
+          <tr><td>Disqualification Close</td><td>Fails ICP</td><td>Delete</td><td>Never</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The Trigger Event Exception</h3>
+    <p>A Tier 3 prospect can warm up. Watch for:</p>
+    <ul class="clean">
+      <li><b>Leadership change</b> — new CEO, CFO.</li>
+      <li><b>Funding event</b> — new investment, exit.</li>
+      <li><b>Industry disruption</b> — regulatory change, competitor move.</li>
+      <li><b>Public distress signal.</b></li>
+    </ul>
+    <div class="callout amber">
+      <span class="label">Rule</span>
+      If a trigger event occurs, re-engage regardless of tier.
+    </div>
+  </section>
+
+  <!-- ==================== PART 10 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 10</span>
+      <h2>The Data Requirements</h2>
+    </div>
+
+    <h3 class="sub">Audit Minimum — 4 Items</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:46px">#</th><th>Item</th><th style="width:120px">Format</th><th style="width:170px">Who Provides</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>3 Years Financials (P&amp;L, BS, CF)</td><td>PDF/Excel</td><td>CFO</td></tr>
+          <tr><td>2</td><td>Revenue by Customer &amp; Segment (Top 20, Churn)</td><td>Excel/PDF</td><td>CFO or Sales Lead</td></tr>
+          <tr><td>3</td><td>90-Minute CEO Session</td><td>Scheduled</td><td>CEO</td></tr>
+          <tr><td>4</td><td>60-Minute CFO Session</td><td>Scheduled</td><td>CFO</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Full Engagement Minimum — 4 Additional Items</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:46px">#</th><th>Item</th><th style="width:150px">Format</th><th style="width:170px">Who Provides</th></tr></thead>
+        <tbody>
+          <tr><td>5</td><td>Internal Project Lead (Name, 20% Time)</td><td>Confirmed</td><td>CEO or COO</td></tr>
+          <tr><td>6</td><td>Steering Committee (3–5 Names, CEO Chairs)</td><td>Confirmed</td><td>CEO</td></tr>
+          <tr><td>7</td><td>Read-Only System Access (CRM, ERP, Financials)</td><td>Credentials</td><td>IT Lead or CFO</td></tr>
+          <tr><td>8</td><td>Implementation Budget Confirmation</td><td>Written</td><td>CEO or CFO</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <span class="label">Everything Else</span>
+      Market analysis, competitor intelligence, industry lifecycle, segmentation, value innovation — <strong>SVA builds from its own intelligence and the 6-Phase framework.</strong>
+    </div>
+  </section>
+
+  <!-- ==================== PART 11 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 11</span>
+      <h2>The Contracts</h2>
+    </div>
+
+    <h3 class="sub">The Two Documents</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:180px">Document</th><th>Function</th><th style="width:220px">When Signed</th></tr></thead>
+        <tbody>
+          <tr><td>MSA (Protocol 07)</td><td>Umbrella. Legal relationship: liability, confidentiality, data protection, payment terms, IP, termination, disputes.</td><td>Once per client.</td></tr>
+          <tr><td>SOW (Protocol 08)</td><td>Per engagement. Scope, deliverables, timeline, gates, fee, governance, IRA, pre-mortem.</td><td>Per engagement.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Key Clauses — MSA</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:80px">Clause</th><th>What It Does</th></tr></thead>
+        <tbody>
+          <tr><td>4</td><td>Advisory role: SVA recommends, client executes, SVA not liable for implementation.</td></tr>
+          <tr><td>6</td><td>Milestone-based payment. 50% upfront. Late-payment interest.</td></tr>
+          <tr><td>7</td><td>Client obligations: the eight data items.</td></tr>
+          <tr><td>9</td><td>IP: SVA retains frameworks; client gets licence to use deliverables.</td></tr>
+          <tr><td>10</td><td>Data Protection: Kenya DPA 2019; ODPC SCCs if cross-border.</td></tr>
+          <tr><td>11</td><td>Limitation of Liability: capped at fees paid.</td></tr>
+          <tr><td>13</td><td>Governing Law: Kenyan law; arbitration in Nairobi.</td></tr>
+          <tr><td>14</td><td>Electronic signature valid under KICA s.83J.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Cross-Border Adaptations</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:180px">Issue</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td>Governing law</td><td>Kenyan law default. Local law only if dispute resolution remains arbitration.</td></tr>
+          <tr><td>Currency</td><td>USD or KES default. Local currency with adjustment clause if required (Tanzania, Nigeria).</td></tr>
+          <tr><td>Tax</td><td>Explicit inclusive/exclusive. Gross-up if withholding applies.</td></tr>
+          <tr><td>Data</td><td>DPA annexed if personal data crosses borders.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Interim Fields — Until Registered</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:180px">Field</th><th>Interim</th><th>Final</th></tr></thead>
+        <tbody>
+          <tr><td>Consultant name</td><td>“Ian Odero”</td><td>“Ian Odero, trading as SVA”</td></tr>
+          <tr><td>KRA PIN</td><td>[Personal PIN]</td><td>[Business PIN]</td></tr>
+          <tr><td>Registered address</td><td>[Personal address]</td><td>[Business address]</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== PART 12 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 12</span>
+      <h2>The Operating Principles</h2>
+    </div>
+
+    <h3 class="sub">The Ten Rules of SVA</h3>
+    <ol class="rules">
+      <li><b>Evidence beats opinion.</b> Every claim traces to a number.</li>
+      <li><b>Speed is a feature.</b> Two-week diagnostic. Not six-week proposal.</li>
+      <li><b>Protection is the product.</b> The 5-Layer Protocol is why clients choose SVA.</li>
+      <li><b>Specificity is the moat.</b> If it could be sent to another client, it is not finished.</li>
+      <li><b>Release is the close.</b> The autonomy email is what makes the decision real.</li>
+      <li><b>Tiering is the discipline.</b> Not everyone gets re-engaged. Focus.</li>
+      <li><b>The referral loop compounds.</b> Ask once, specifically, easily.</li>
+      <li><b>The pipeline is the leading indicator.</b> Protect it above all else.</li>
+      <li><b>Hire when delivery exceeds 60% of your time.</b> The associate is not optional at scale.</li>
+      <li><b>Decline incompatible clients.</b> A bad fit is a future dispute.</li>
+    </ol>
+
+    <h3 class="sub">The Quality Check — Every Output</h3>
+    <p>Before anything leaves the desk:</p>
+    <ul class="checklist">
+      <li>Could this be sent to another client with only the name changed? → <strong>Rewrite.</strong></li>
+      <li>Does it contain a specific number or fact? → <strong>If no, rewrite.</strong></li>
+      <li>Does it continue the arc? → <strong>If it restarts, rewrite.</strong></li>
+      <li>Does it respect the Shield? → <strong>If not, rewrite.</strong></li>
+      <li>Is there any sentence that could be deleted without loss? → <strong>Delete it.</strong></li>
+    </ul>
+  </section>
+
+  <!-- ==================== PART 13 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 13</span>
+      <h2>The Annual Review</h2>
+    </div>
+
+    <h3 class="sub">The Year-End Reset — December</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:60px">Step</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Complete outstanding engagements.</td></tr>
+          <tr><td>2</td><td>Run the full annual review: what worked, what didn't, what to change.</td></tr>
+          <tr><td>3</td><td>Re-tier all accounts for the new year.</td></tr>
+          <tr><td>4</td><td>Prepare Q1 strategy.</td></tr>
+          <tr><td>5</td><td>Rest.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">The Questions to Ask</h3>
+    <ul class="clean">
+      <li>What was the revenue? Actual vs. target.</li>
+      <li>What was the pipeline health at year-end? Tier 1 count. Tier 2 count.</li>
+      <li>What was the conversion rate? Prospect → meeting → diagnostic → engagement.</li>
+      <li>What was the churn? Client retention.</li>
+      <li>What was the referral rate? Referrals per client.</li>
+      <li>What was the associate capacity? Did the associate hire work?</li>
+      <li>What was the biggest risk that materialized? What did it teach?</li>
+      <li>What is the one thing to change for next year?</li>
+    </ul>
+
+    <div class="callout violet">
+      <span class="label">The Output</span>
+      A <strong>one-page Annual Review</strong> that becomes the INPUT for the Q1 Strategic Reset in January.
+    </div>
+  </section>
+
+  <!-- ==================== PART 14 ==================== -->
+  <section class="part">
+    <div class="part-head">
+      <span class="part-num">Part 14</span>
+      <h2>The Master Control Sheet</h2>
+    </div>
+
+    <h3 class="sub">The Full System — One Page</h3>
+
+    <div class="mcs">
+
+      <div class="tile">
+        <h5>Marketing</h5>
+        <p>SIS + Emails 1–3</p>
+        <p>Email 4 — The Bridge</p>
+      </div>
+
+      <div class="tile">
+        <h5>Sales</h5>
+        <p>FU1 — Protocol 01</p>
+        <p>FU2 — Protocol 02</p>
+        <p>Call — Protocol 09A</p>
+      </div>
+
+      <div class="tile">
+        <h5>Delivery</h5>
+        <p>Diagnostic — Protocol 03</p>
+        <p>Revised SIS — Protocol 04A</p>
+        <p>Diagnostic Report — Protocol 04</p>
+        <p>Full Engagement — Protocol 05</p>
+        <p>5-Layer Protection Protocol</p>
+      </div>
+
+      <div class="tile">
+        <h5>Compound</h5>
+        <p>Referral — Protocol 06</p>
+        <p>1–3 referrals per satisfied client</p>
+      </div>
+
+      <div class="tile">
+        <h5>Contracts</h5>
+        <p>MSA — Protocol 07</p>
+        <p>SOW — Protocol 08</p>
+      </div>
+
+      <div class="tile">
+        <h5>Rhythm</h5>
+        <p>46 productive weeks</p>
+        <p>Monthly Check-In</p>
+        <p>Quarterly Reset</p>
+        <p>Half-Year Full Reset</p>
+      </div>
+
+      <div class="tile">
+        <h5>Tiers</h5>
+        <p>Tier 1 — Quarterly</p>
+        <p>Tier 2 — Half-Year · Half Rule</p>
+        <p>Tier 3 — Drop</p>
+      </div>
+
+      <div class="tile">
+        <h5>Data</h5>
+        <p>Audit Minimum: 4 items</p>
+        <p>Full Engagement: 8 items</p>
+      </div>
+
+      <div class="tile">
+        <h5>Registration — In Process</h5>
+        <p>Business name</p>
+        <p>KRA PIN</p>
+        <p>Business bank account</p>
+        <p>eTIMS</p>
+        <p><span class="k">Interim:</span> “Ian Odero” (individual)</p>
+        <p><span class="k">Final:</span> “Ian Odero, trading as SVA”</p>
+      </div>
+
+      <div class="tile">
+        <h5>The Six Standards</h5>
+        <p>1 · Account-specific</p>
+        <p>2 · Specific</p>
+        <p>3 · Protected</p>
+        <p>4 · Evidence-grounded</p>
+        <p>5 · Calm</p>
+        <p>6 · Selective</p>
+      </div>
+
+    </div>
+
+    <div class="schedule-strip">
+      <span class="lbl">Updated Email Schedule</span>
+      <span class="slot">TUE 3:15pm · E1</span>
+      <span class="slot">WED 3:15pm · E2</span>
+      <span class="slot">THU 6:30am · E3</span>
+      <span class="slot">THU 2:30pm · E4</span>
+    </div>
+
+    <h3 class="sub">The Daily, Weekly, Monthly, Quarterly, Annual Rhythm</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:150px">Frequency</th><th>Activity</th></tr></thead>
+        <tbody>
+          <tr><td>Daily</td><td>No standard daily ritual. Work is batched.</td></tr>
+          <tr><td>Weekly</td><td>Monday follow-ups. Tue–Thu sequence (updated times). Friday review.</td></tr>
+          <tr><td>Monthly</td><td>Last Friday: pipeline, conversion, cash, risks, OKRs.</td></tr>
+          <tr><td>Quarterly</td><td>Full re-tiering. Reset. Next quarter strategy.</td></tr>
+          <tr><td>Half-Yearly</td><td>Deep re-assessment. Full reset.</td></tr>
+          <tr><td>Annually</td><td>Year-end review. Q1 strategy. Rest.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>SVA Full Operating System · v2.1</span>
+    <span>Ian Odero · Strategic Value Consultant</span>
+  </div>
+
+</main>
+
+<div class="toolbar no-print">
+  <div class="hint">Enable “Background graphics” in the print dialog.</div>
+  <button class="btn" onclick="window.print()">Save as PDF</button>
+</div>
+
+</body>
+</html>
